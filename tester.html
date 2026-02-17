@@ -1,81 +1,138 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SlipParser API Tester</title>
-  <style>
-    body { font-family: DM Sans, Arial, sans-serif; background: #181b22; color: #e8eaf0; margin: 0; padding: 0; }
-    .container { max-width: 480px; margin: 60px auto; background: #22262f; border-radius: 12px; box-shadow: 0 2px 16px #0002; padding: 32px; }
-    h1 { font-family: Syne, sans-serif; font-size: 2rem; margin-bottom: 18px; color: #4f8eff; }
-    label { font-weight: 500; color: #7a8099; }
-    input[type="file"] { margin: 16px 0 24px; }
-    button { background: #4f8eff; color: #fff; border: none; border-radius: 6px; padding: 12px 24px; font-size: 1rem; font-family: Syne, sans-serif; cursor: pointer; transition: background 0.2s; }
-    button:hover { background: #7c5cfc; }
-    .response { margin-top: 32px; background: #13151c; border-radius: 8px; padding: 18px; font-family: JetBrains Mono, monospace; font-size: 14px; color: #86efac; white-space: pre-wrap; }
-    .error { color: #ff5f6d; margin-top: 18px; }
-    .loading { color: #f5a623; margin-top: 18px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>SlipParser API Tester</h1>
-    <form id="uploadForm">
-      <label for="imageInput">Upload bank slip image:</label><br>
-      <input type="file" id="imageInput" accept="image/*" required><br>
-      <button type="submit">Parse Slip</button>
-    </form>
-    <div id="loading" class="loading" style="display:none;">Processing...</div>
-    <div id="error" class="error" style="display:none;"></div>
-    <div id="response" class="response" style="display:none;"></div>
-  </div>
-  <script>
-    const form = document.getElementById('uploadForm');
-    const imageInput = document.getElementById('imageInput');
-    const loading = document.getElementById('loading');
-    const errorDiv = document.getElementById('error');
-    const responseDiv = document.getElementById('response');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errorDiv.style.display = 'none';
-      responseDiv.style.display = 'none';
-      loading.style.display = 'block';
-
-      const file = imageInput.files[0];
-      if (!file) {
-        loading.style.display = 'none';
-        errorDiv.textContent = 'Please select an image.';
-        errorDiv.style.display = 'block';
-        return;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SlipParser API Tester</title>
+    <style>
+      body {
+        font-family:
+          DM Sans,
+          Arial,
+          sans-serif;
+        background: #181b22;
+        color: #e8eaf0;
+        margin: 0;
+        padding: 0;
       }
+      .container {
+        max-width: 480px;
+        margin: 60px auto;
+        background: #22262f;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px #0002;
+        padding: 32px;
+      }
+      h1 {
+        font-family: Syne, sans-serif;
+        font-size: 2rem;
+        margin-bottom: 18px;
+        color: #4f8eff;
+      }
+      label {
+        font-weight: 500;
+        color: #7a8099;
+      }
+      input[type="file"] {
+        margin: 16px 0 24px;
+      }
+      button {
+        background: #4f8eff;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-family: Syne, sans-serif;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      button:hover {
+        background: #7c5cfc;
+      }
+      .response {
+        margin-top: 32px;
+        background: #13151c;
+        border-radius: 8px;
+        padding: 18px;
+        font-family:
+          JetBrains Mono,
+          monospace;
+        font-size: 14px;
+        color: #86efac;
+        white-space: pre-wrap;
+      }
+      .error {
+        color: #ff5f6d;
+        margin-top: 18px;
+      }
+      .loading {
+        color: #f5a623;
+        margin-top: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>SlipParser API Tester</h1>
+      <form id="uploadForm">
+        <label for="imageInput">Upload bank slip image:</label><br />
+        <input type="file" id="imageInput" accept="image/*" required /><br />
+        <button type="submit">Parse Slip</button>
+      </form>
+      <div id="loading" class="loading" style="display: none">
+        Processing...
+      </div>
+      <div id="error" class="error" style="display: none"></div>
+      <div id="response" class="response" style="display: none"></div>
+    </div>
+    <script>
+      const form = document.getElementById("uploadForm");
+      const imageInput = document.getElementById("imageInput");
+      const loading = document.getElementById("loading");
+      const errorDiv = document.getElementById("error");
+      const responseDiv = document.getElementById("response");
 
-      const reader = new FileReader();
-      reader.onload = async function(evt) {
-        const base64Image = evt.target.result;
-        try {
-          const res = await fetch('/parse-slip', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ base64Image })
-          });
-          const data = await res.json();
-          loading.style.display = 'none';
-          if (!res.ok) {
-            errorDiv.textContent = data.error || 'Error processing image.';
-            errorDiv.style.display = 'block';
-          } else {
-            responseDiv.textContent = JSON.stringify(data, null, 2);
-            responseDiv.style.display = 'block';
-          }
-        } catch (err) {
-          loading.style.display = 'none';
-          errorDiv.textContent = 'Network error.';
-          errorDiv.style.display = 'block';
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorDiv.style.display = "none";
+        responseDiv.style.display = "none";
+        loading.style.display = "block";
+
+        const file = imageInput.files[0];
+        if (!file) {
+          loading.style.display = "none";
+          errorDiv.textContent = "Please select an image.";
+          errorDiv.style.display = "block";
+          return;
         }
-      };
-      reader.readAsDataURL(file);
-    });
-  </script>
-</body>
+
+        const reader = new FileReader();
+        reader.onload = async function (evt) {
+          const base64Image = evt.target.result;
+          try {
+            const res = await fetch("/parse-slip", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ base64Image }),
+            });
+            const data = await res.json();
+            loading.style.display = "none";
+            if (!res.ok) {
+              errorDiv.textContent = data.error || "Error processing image.";
+              errorDiv.style.display = "block";
+            } else {
+              responseDiv.textContent = JSON.stringify(data, null, 2);
+              responseDiv.style.display = "block";
+            }
+          } catch (err) {
+            loading.style.display = "none";
+            errorDiv.textContent = "Network error.";
+            errorDiv.style.display = "block";
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    </script>
+  </body>
 </html>
