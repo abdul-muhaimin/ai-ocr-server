@@ -1,0 +1,1642 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SlipParser API — Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #0b0d11;
+        --bg2: #111318;
+        --bg3: #181b22;
+        --border: #22262f;
+        --border2: #2c3140;
+        --text: #e8eaf0;
+        --text-muted: #7a8099;
+        --text-dim: #4a5068;
+        --accent: #4f8eff;
+        --accent2: #7c5cfc;
+        --green: #22d3a0;
+        --amber: #f5a623;
+        --red: #ff5f6d;
+        --cyan: #38bdf8;
+        --tag-bg: rgba(79, 142, 255, 0.1);
+        --tag-border: rgba(79, 142, 255, 0.25);
+        --code-bg: #13151c;
+        --sidebar-w: 260px;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        font-size: 14.5px;
+      }
+
+      /* ── Sidebar ── */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: var(--sidebar-w);
+        height: 100vh;
+        background: var(--bg2);
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+      }
+
+      .sidebar-logo {
+        padding: 24px 20px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .logo-mark {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Syne", sans-serif;
+        font-weight: 800;
+        font-size: 13px;
+        color: #fff;
+        letter-spacing: -0.5px;
+      }
+
+      .logo-text {
+        font-family: "Syne", sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--text);
+      }
+
+      .logo-text span {
+        color: var(--text-muted);
+        font-weight: 400;
+        font-size: 12px;
+        display: block;
+        margin-top: 1px;
+      }
+
+      .sidebar-nav {
+        padding: 16px 0;
+        flex: 1;
+      }
+
+      .nav-section {
+        padding: 6px 20px 4px;
+        font-family: "Syne", sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-dim);
+        margin-top: 8px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 20px;
+        font-size: 13.5px;
+        color: var(--text-muted);
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        transition: all 0.15s;
+      }
+
+      .nav-item:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .nav-item.active {
+        color: var(--accent);
+        border-left-color: var(--accent);
+        background: rgba(79, 142, 255, 0.06);
+      }
+
+      .nav-badge {
+        margin-left: auto;
+        font-size: 10px;
+        font-family: "JetBrains Mono", monospace;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+
+      .nav-badge.post {
+        background: rgba(79, 142, 255, 0.1);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .nav-badge.get {
+        background: rgba(34, 211, 160, 0.1);
+        border-color: var(--green);
+        color: var(--green);
+      }
+
+      .sidebar-footer {
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+      }
+
+      .version-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-family: "JetBrains Mono", monospace;
+        color: var(--text-dim);
+      }
+
+      .version-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+
+      /* ── Main ── */
+      .main {
+        margin-left: var(--sidebar-w);
+        min-height: 100vh;
+      }
+
+      /* ── Top bar ── */
+      .topbar {
+        position: sticky;
+        top: 0;
+        background: rgba(11, 13, 17, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 48px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 90;
+      }
+
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      .breadcrumb .sep {
+        color: var(--text-dim);
+      }
+      .breadcrumb .cur {
+        color: var(--text);
+      }
+
+      .topbar-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .base-url {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        padding: 5px 12px;
+        border-radius: 6px;
+        color: var(--text-muted);
+      }
+
+      .base-url span {
+        color: var(--text);
+      }
+
+      /* ── Content ── */
+      .content {
+        padding: 52px 48px;
+        max-width: 860px;
+      }
+
+      /* ── Hero ── */
+      .hero {
+        margin-bottom: 52px;
+        padding-bottom: 48px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11.5px;
+        font-family: "JetBrains Mono", monospace;
+        color: var(--accent);
+        background: var(--tag-bg);
+        border: 1px solid var(--tag-border);
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+      }
+
+      .hero h1 {
+        font-family: "Syne", sans-serif;
+        font-weight: 800;
+        font-size: 36px;
+        line-height: 1.1;
+        letter-spacing: -1px;
+        color: var(--text);
+        margin-bottom: 14px;
+      }
+
+      .hero p {
+        font-size: 16px;
+        color: var(--text-muted);
+        font-weight: 300;
+        max-width: 580px;
+        line-height: 1.65;
+      }
+
+      .hero-stats {
+        display: flex;
+        gap: 28px;
+        margin-top: 28px;
+      }
+
+      .stat {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .stat-value {
+        font-family: "Syne", sans-serif;
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--text);
+      }
+
+      .stat-label {
+        font-size: 11.5px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+
+      /* ── Sections ── */
+      .section {
+        margin-bottom: 56px;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .section-number {
+        width: 26px;
+        height: 26px;
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+
+      h2 {
+        font-family: "Syne", sans-serif;
+        font-weight: 700;
+        font-size: 20px;
+        color: var(--text);
+        letter-spacing: -0.3px;
+      }
+
+      h3 {
+        font-family: "Syne", sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 14px;
+      }
+
+      /* ── Endpoint Card ── */
+      .endpoint-card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 28px;
+      }
+
+      .endpoint-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg3);
+      }
+
+      .method-badge {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 5px;
+        letter-spacing: 0.5px;
+      }
+
+      .method-badge.post {
+        background: rgba(79, 142, 255, 0.15);
+        color: var(--accent);
+        border: 1px solid rgba(79, 142, 255, 0.3);
+      }
+      .method-badge.get {
+        background: rgba(34, 211, 160, 0.12);
+        color: var(--green);
+        border: 1px solid rgba(34, 211, 160, 0.25);
+      }
+
+      .endpoint-path {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      .endpoint-desc {
+        margin-left: auto;
+        font-size: 12.5px;
+        color: var(--text-dim);
+      }
+
+      .endpoint-body {
+        padding: 20px;
+      }
+
+      /* ── Params Table ── */
+      .param-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+
+      .param-table th {
+        font-size: 10.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-dim);
+        text-align: left;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .param-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+        font-size: 13.5px;
+      }
+
+      .param-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .param-name {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        color: var(--cyan);
+      }
+
+      .param-type {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        color: var(--text-dim);
+        background: var(--bg3);
+        padding: 2px 7px;
+        border-radius: 4px;
+        white-space: nowrap;
+      }
+
+      .required-badge {
+        font-size: 10px;
+        font-family: "JetBrains Mono", monospace;
+        background: rgba(255, 95, 109, 0.12);
+        border: 1px solid rgba(255, 95, 109, 0.25);
+        color: var(--red);
+        padding: 1px 7px;
+        border-radius: 4px;
+      }
+
+      .optional-badge {
+        font-size: 10px;
+        font-family: "JetBrains Mono", monospace;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+        padding: 1px 7px;
+        border-radius: 4px;
+      }
+
+      .param-desc {
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* ── Code Block ── */
+      .code-block {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 16px 0;
+      }
+
+      .code-block-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .code-lang {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .copy-btn {
+        font-size: 11px;
+        font-family: "DM Sans", sans-serif;
+        color: var(--text-dim);
+        background: none;
+        border: 1px solid var(--border);
+        padding: 3px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .copy-btn:hover {
+        color: var(--text);
+        border-color: var(--border2);
+      }
+
+      .code-block pre {
+        padding: 18px 20px;
+        overflow-x: auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: var(--text);
+        background: none;
+      }
+
+      /* JSON Syntax colors */
+      .json-key {
+        color: #7dd3fc;
+      }
+      .json-str {
+        color: #86efac;
+      }
+      .json-num {
+        color: #fb923c;
+      }
+      .json-null {
+        color: #94a3b8;
+      }
+      .json-bool {
+        color: #c084fc;
+      }
+      .json-comment {
+        color: #4a5068;
+        font-style: italic;
+      }
+
+      /* ── Response schemas ── */
+      .response-tabs {
+        display: flex;
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: 8px 8px 0 0;
+        overflow: hidden;
+        background: var(--bg3);
+      }
+
+      .resp-tab {
+        padding: 9px 18px;
+        font-size: 12.5px;
+        font-family: "JetBrains Mono", monospace;
+        cursor: pointer;
+        border-right: 1px solid var(--border);
+        color: var(--text-muted);
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .resp-tab:last-child {
+        border-right: none;
+      }
+      .resp-tab.active {
+        background: var(--bg2);
+        color: var(--text);
+      }
+      .resp-tab .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+      }
+      .dot-green {
+        background: var(--green);
+      }
+      .dot-amber {
+        background: var(--amber);
+      }
+      .dot-red {
+        background: var(--red);
+      }
+
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+
+      .tab-panels .code-block {
+        border-radius: 0 0 8px 8px;
+        border-top: none;
+        margin-top: 0;
+      }
+
+      /* ── Field docs ── */
+      .field-group {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+
+      .field-group-title {
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg3);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .field-row {
+        display: grid;
+        grid-template-columns: 200px 120px 1fr;
+        gap: 12px;
+        padding: 11px 16px;
+        border-bottom: 1px solid var(--border);
+        align-items: start;
+        transition: background 0.1s;
+      }
+
+      .field-row:last-child {
+        border-bottom: none;
+      }
+      .field-row:hover {
+        background: rgba(255, 255, 255, 0.015);
+      }
+
+      .field-key {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        color: var(--cyan);
+      }
+
+      .field-key .path {
+        color: var(--text-dim);
+      }
+
+      .field-info {
+        color: var(--text-muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .field-note {
+        font-size: 11.5px;
+        color: var(--text-dim);
+        margin-top: 3px;
+      }
+
+      /* ── Status codes ── */
+      .status-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .status-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 14px 16px;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .status-code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        font-weight: 600;
+        min-width: 38px;
+        padding-top: 1px;
+      }
+
+      .status-code.s200 {
+        color: var(--green);
+      }
+      .status-code.s400 {
+        color: var(--amber);
+      }
+      .status-code.s500 {
+        color: var(--red);
+      }
+
+      .status-info strong {
+        font-weight: 500;
+        font-size: 13.5px;
+        display: block;
+      }
+      .status-info p {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-top: 3px;
+      }
+
+      /* ── Callout ── */
+      .callout {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        margin: 16px 0;
+        font-size: 13.5px;
+      }
+
+      .callout.info {
+        background: rgba(79, 142, 255, 0.07);
+        border: 1px solid rgba(79, 142, 255, 0.2);
+        color: #93bbff;
+      }
+
+      .callout.warn {
+        background: rgba(245, 166, 35, 0.07);
+        border: 1px solid rgba(245, 166, 35, 0.2);
+        color: #ffc670;
+      }
+
+      .callout-icon {
+        font-size: 15px;
+        margin-top: 1px;
+        flex-shrink: 0;
+      }
+      .callout-text {
+        line-height: 1.55;
+      }
+      .callout-text strong {
+        display: block;
+        margin-bottom: 3px;
+        font-weight: 500;
+      }
+
+      /* ── Score chart visual ── */
+      .score-guide {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+
+      .score-band {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-muted);
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        padding: 4px 10px;
+        border-radius: 6px;
+      }
+
+      .score-band .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      /* ── Status enum ── */
+      .status-enum {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+      }
+
+      .enum-tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        padding: 3px 10px;
+        border-radius: 5px;
+      }
+
+      .enum-complete {
+        background: rgba(34, 211, 160, 0.1);
+        color: var(--green);
+        border: 1px solid rgba(34, 211, 160, 0.25);
+      }
+      .enum-partial {
+        background: rgba(245, 166, 35, 0.1);
+        color: var(--amber);
+        border: 1px solid rgba(245, 166, 35, 0.25);
+      }
+      .enum-empty {
+        background: rgba(122, 128, 153, 0.1);
+        color: var(--text-muted);
+        border: 1px solid rgba(122, 128, 153, 0.2);
+      }
+      .enum-error {
+        background: rgba(255, 95, 109, 0.1);
+        color: var(--red);
+        border: 1px solid rgba(255, 95, 109, 0.25);
+      }
+
+      /* ── Divider ── */
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 48px 0;
+      }
+
+      /* ── Scrollbar ── */
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border2);
+        border-radius: 4px;
+      }
+
+      /* ── Animations ── */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .content > * {
+        animation: fadeIn 0.35s ease both;
+      }
+      .content > *:nth-child(2) {
+        animation-delay: 0.05s;
+      }
+      .content > *:nth-child(3) {
+        animation-delay: 0.1s;
+      }
+      .content > *:nth-child(4) {
+        animation-delay: 0.15s;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <a class="logo-mark" href="#">
+          <div class="logo-icon">SP</div>
+          <div class="logo-text">SlipParser<span>API Reference</span></div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a href="#introduction" class="nav-item active">Introduction</a>
+        <a href="#authentication" class="nav-item">Authentication</a>
+
+        <div class="nav-section">Endpoints</div>
+        <a href="#parse-slip" class="nav-item">
+          /parse-slip
+          <span class="nav-badge post">POST</span>
+        </a>
+        <a href="#health" class="nav-item">
+          /health
+          <span class="nav-badge get">GET</span>
+        </a>
+
+        <div class="nav-section">Response</div>
+        <a href="#response-schema" class="nav-item">Response Schema</a>
+        <a href="#ai-score" class="nav-item">AI Score</a>
+        <a href="#status-values" class="nav-item">Status Values</a>
+        <a href="#http-codes" class="nav-item">HTTP Codes</a>
+
+        <div class="nav-section">Guides</div>
+        <a href="#image-guidelines" class="nav-item">Image Guidelines</a>
+        <a href="#errors" class="nav-item">Error Handling</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="version-tag">
+          <span class="version-dot"></span>
+          v1.0 · gpt-4.1-mini
+        </span>
+      </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="main">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span>SlipParser</span>
+          <span class="sep">›</span>
+          <span class="cur">API Reference</span>
+        </div>
+        <div class="topbar-right">
+          <span class="base-url"
+            >Base URL: <span>http://localhost:3000</span></span
+          >
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- ── Hero ── -->
+        <div class="hero" id="introduction">
+          <div class="hero-eyebrow">
+            ⚡ OCR · AI-Powered · Bank Slip Validation
+          </div>
+          <h1>SlipParser API</h1>
+          <p>
+            Parse and validate Maldivian bank transfer slips (BML & MIB) with
+            AI-powered OCR. Extract transaction IDs and account numbers with
+            confidence scoring.
+          </p>
+          <div class="hero-stats">
+            <div class="stat">
+              <span class="stat-value">1</span
+              ><span class="stat-label">Endpoint</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">0–100</span
+              ><span class="stat-label">AI Score</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value">~1s</span
+              ><span class="stat-label">Avg Response</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Authentication ── -->
+        <div class="section" id="authentication">
+          <div class="section-header">
+            <div class="section-number">01</div>
+            <h2>Authentication</h2>
+          </div>
+          <div class="callout info">
+            <span class="callout-icon">ℹ️</span>
+            <div class="callout-text">
+              <strong>Server-side API key</strong>
+              Authentication is handled server-side via the
+              <code>OPENAI_API_KEY</code> environment variable. No auth headers
+              are required from the client.
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── POST /parse-slip ── -->
+        <div class="section" id="parse-slip">
+          <div class="section-header">
+            <div class="section-number">02</div>
+            <h2>Parse Slip</h2>
+          </div>
+
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="method-badge post">POST</span>
+              <span class="endpoint-path">/parse-slip</span>
+              <span class="endpoint-desc"
+                >Extract data from bank transfer slip image</span
+              >
+            </div>
+            <div class="endpoint-body">
+              <h3>Request Body</h3>
+              <table class="param-table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Required</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="param-name">base64Image</span></td>
+                    <td><span class="param-type">string</span></td>
+                    <td><span class="required-badge">required</span></td>
+                    <td class="param-desc">
+                      Base64-encoded image of the bank slip. Include the
+                      <code>data:image/...;base64,</code> prefix. Max payload
+                      size: <strong>20MB</strong>.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <h3>Example Request</h3>
+              <div class="code-block">
+                <div class="code-block-header">
+                  <span class="code-lang">cURL</span>
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    Copy
+                  </button>
+                </div>
+                <pre>
+curl -X POST http://localhost:3000/parse-slip \
+  -H "Content-Type: application/json" \
+  -d '{
+    "base64Image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+  }'</pre
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Response tabs -->
+          <h3>Responses</h3>
+          <div class="tab-panels">
+            <div class="response-tabs">
+              <div class="resp-tab active" onclick="switchTab(this, 'tab-200')">
+                <span class="dot dot-green"></span> 200 Success
+              </div>
+              <div
+                class="resp-tab"
+                onclick="switchTab(this, 'tab-200-partial')"
+              >
+                <span class="dot dot-amber"></span> 200 Partial
+              </div>
+              <div class="resp-tab" onclick="switchTab(this, 'tab-400')">
+                <span class="dot dot-red"></span> 400 Bad Request
+              </div>
+              <div class="resp-tab" onclick="switchTab(this, 'tab-500')">
+                <span class="dot dot-red"></span> 500 Server Error
+              </div>
+            </div>
+
+            <div id="tab-200" class="tab-content active">
+              <div class="code-block">
+                <div class="code-block-header">
+                  <span class="code-lang">JSON</span>
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    Copy
+                  </button>
+                </div>
+                <pre>{
+  <span class="json-key">"requestId"</span>: <span class="json-str">"req_1749203847_ab3f2"</span>,
+  <span class="json-key">"status"</span>: <span class="json-str">"complete"</span>,
+
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"transactionId"</span>: <span class="json-str">"TXN-20240102-98271"</span>,
+    <span class="json-key">"toAccountNumber"</span>: <span class="json-str">"7700123456"</span>,
+    <span class="json-key">"rawText"</span>: <span class="json-str">"Transfer to: 7700123456\nTransaction: TXN-20240102-98271\n..."</span>
+  },
+
+  <span class="json-key">"aiScore"</span>: <span class="json-num">92</span>, <span class="json-comment">// 0–100 confidence</span>
+
+  <span class="json-key">"meta"</span>: {
+    <span class="json-key">"processTimeMs"</span>: <span class="json-num">1240</span>,
+    <span class="json-key">"aiTimeMs"</span>: <span class="json-num">1105</span>,
+    <span class="json-key">"imageSizeKB"</span>: <span class="json-num">312</span>,
+    <span class="json-key">"model"</span>: <span class="json-str">"gpt-4.1-mini"</span>,
+    <span class="json-key">"tokens"</span>: {
+      <span class="json-key">"input"</span>: <span class="json-num">450</span>,
+      <span class="json-key">"output"</span>: <span class="json-num">80</span>,
+      <span class="json-key">"total"</span>: <span class="json-num">530</span>,
+      <span class="json-key">"estimatedCostUSD"</span>: <span class="json-num">0.000115</span>
+    }
+  }
+}</pre>
+              </div>
+            </div>
+
+            <div id="tab-200-partial" class="tab-content">
+              <div class="code-block">
+                <div class="code-block-header">
+                  <span class="code-lang">JSON</span>
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    Copy
+                  </button>
+                </div>
+                <pre>{
+  <span class="json-key">"requestId"</span>: <span class="json-str">"req_1749203900_cx9a1"</span>,
+  <span class="json-key">"status"</span>: <span class="json-str">"partial"</span>, <span class="json-comment">// only one field found</span>
+
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"transactionId"</span>: <span class="json-str">"TXN-20240102-98271"</span>,
+    <span class="json-key">"toAccountNumber"</span>: <span class="json-null">null</span>,
+    <span class="json-key">"rawText"</span>: <span class="json-str">"..."</span>
+  },
+
+  <span class="json-key">"aiScore"</span>: <span class="json-num">54</span>,
+
+  <span class="json-key">"meta"</span>: {
+    <span class="json-key">"processTimeMs"</span>: <span class="json-num">1380</span>,
+    <span class="json-key">"aiTimeMs"</span>: <span class="json-num">1260</span>,
+    <span class="json-key">"imageSizeKB"</span>: <span class="json-num">189</span>,
+    <span class="json-key">"model"</span>: <span class="json-str">"gpt-4.1-mini"</span>,
+    <span class="json-key">"tokens"</span>: {
+      <span class="json-key">"input"</span>: <span class="json-num">430</span>,
+      <span class="json-key">"output"</span>: <span class="json-num">72</span>,
+      <span class="json-key">"total"</span>: <span class="json-num">502</span>,
+      <span class="json-key">"estimatedCostUSD"</span>: <span class="json-num">0.000108</span>
+    }
+  }
+}</pre>
+              </div>
+            </div>
+
+            <div id="tab-400" class="tab-content">
+              <div class="code-block">
+                <div class="code-block-header">
+                  <span class="code-lang">JSON</span>
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    Copy
+                  </button>
+                </div>
+                <pre>{
+  <span class="json-key">"requestId"</span>: <span class="json-str">"req_1749203910_zz1q9"</span>,
+  <span class="json-key">"status"</span>: <span class="json-str">"error"</span>,
+  <span class="json-key">"error"</span>: <span class="json-str">"Missing image"</span>,
+  <span class="json-key">"processTimeMs"</span>: <span class="json-num">2</span>
+}</pre>
+              </div>
+            </div>
+
+            <div id="tab-500" class="tab-content">
+              <div class="code-block">
+                <div class="code-block-header">
+                  <span class="code-lang">JSON</span>
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    Copy
+                  </button>
+                </div>
+                <pre>{
+  <span class="json-key">"requestId"</span>: <span class="json-str">"req_1749203920_mn4r7"</span>,
+  <span class="json-key">"status"</span>: <span class="json-str">"error"</span>,
+  <span class="json-key">"error"</span>: <span class="json-str">"OCR processing failed"</span>,
+  <span class="json-key">"processTimeMs"</span>: <span class="json-num">843</span>
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── GET /health ── -->
+        <div class="section" id="health">
+          <div class="section-header">
+            <div class="section-number">03</div>
+            <h2>Health Check</h2>
+          </div>
+          <div class="endpoint-card">
+            <div class="endpoint-header">
+              <span class="method-badge get">GET</span>
+              <span class="endpoint-path">/health</span>
+              <span class="endpoint-desc"
+                >Liveness check for monitoring and load balancers</span
+              >
+            </div>
+            <div class="endpoint-body">
+              <div class="code-block">
+                <div class="code-block-header">
+                  <span class="code-lang">JSON · 200 OK</span>
+                </div>
+                <pre>{
+  <span class="json-key">"status"</span>: <span class="json-str">"ok"</span>,
+  <span class="json-key">"timestamp"</span>: <span class="json-str">"2024-01-02T10:32:11.000Z"</span>
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── Response Schema ── -->
+        <div class="section" id="response-schema">
+          <div class="section-header">
+            <div class="section-number">04</div>
+            <h2>Response Schema</h2>
+          </div>
+
+          <!-- Root -->
+          <div class="field-group">
+            <div class="field-group-title">Root</div>
+            <div class="field-row">
+              <div><span class="field-key">requestId</span></div>
+              <div><span class="param-type">string</span></div>
+              <div class="field-info">
+                Unique identifier for this request. Use for log correlation and
+                support tickets.
+              </div>
+            </div>
+            <div class="field-row">
+              <div><span class="field-key">status</span></div>
+              <div><span class="param-type">string</span></div>
+              <div class="field-info">
+                Extraction outcome.
+                <div class="status-enum">
+                  <span class="enum-tag enum-complete">complete</span>
+                  <span class="enum-tag enum-partial">partial</span>
+                  <span class="enum-tag enum-empty">empty</span>
+                  <span class="enum-tag enum-error">error</span>
+                </div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div><span class="field-key">aiScore</span></div>
+              <div><span class="param-type">number | null</span></div>
+              <div class="field-info">
+                AI self-assessed confidence: 0–100. See
+                <a href="#ai-score" style="color: var(--accent)">AI Score</a>
+                section.
+              </div>
+            </div>
+          </div>
+
+          <!-- data -->
+          <div class="field-group">
+            <div class="field-group-title">data</div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">data.</span>transactionId</span
+                >
+              </div>
+              <div><span class="param-type">string | null</span></div>
+              <div class="field-info">
+                Transaction ID extracted from the slip. <code>null</code> if not
+                found or ambiguous.
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">data.</span>toAccountNumber</span
+                >
+              </div>
+              <div><span class="param-type">string | null</span></div>
+              <div class="field-info">
+                Destination account number from fields labeled "To" or "To
+                Account". <code>null</code> if not found.
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">data.</span>rawText</span
+                >
+              </div>
+              <div><span class="param-type">string | null</span></div>
+              <div class="field-info">
+                All OCR text extracted from the image. Useful for debugging or
+                audit trails.
+              </div>
+            </div>
+          </div>
+
+          <!-- meta -->
+          <div class="field-group">
+            <div class="field-group-title">meta</div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">meta.</span>processTimeMs</span
+                >
+              </div>
+              <div><span class="param-type">number</span></div>
+              <div class="field-info">
+                Total wall-clock time for the request in milliseconds, from
+                receipt to response.
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">meta.</span>aiTimeMs</span
+                >
+              </div>
+              <div><span class="param-type">number</span></div>
+              <div class="field-info">
+                Time spent waiting for the OpenAI API response only.
+                <code>processTimeMs - aiTimeMs</code> gives your server
+                overhead.
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">meta.</span>imageSizeKB</span
+                >
+              </div>
+              <div><span class="param-type">number</span></div>
+              <div class="field-info">
+                Estimated size of the decoded image in kilobytes, calculated
+                from the base64 string.
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">meta.</span>model</span
+                >
+              </div>
+              <div><span class="param-type">string</span></div>
+              <div class="field-info">
+                OpenAI model used for this request. Useful for audit logs if the
+                model is updated.
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">meta.tokens.</span>input</span
+                >
+              </div>
+              <div><span class="param-type">number</span></div>
+              <div class="field-info">
+                Number of input tokens consumed (prompt + image encoding).
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">meta.tokens.</span>output</span
+                >
+              </div>
+              <div><span class="param-type">number</span></div>
+              <div class="field-info">
+                Number of output tokens generated by the model.
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">meta.tokens.</span>total</span
+                >
+              </div>
+              <div><span class="param-type">number</span></div>
+              <div class="field-info">Sum of input and output tokens.</div>
+            </div>
+            <div class="field-row">
+              <div>
+                <span class="field-key"
+                  ><span class="path">meta.tokens.</span>estimatedCostUSD</span
+                >
+              </div>
+              <div><span class="param-type">number</span></div>
+              <div class="field-info">
+                Estimated USD cost for this request based on OpenAI pricing
+                constants. Update <code>COST_PER_1K_*</code> in config to match
+                your plan.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── AI Score ── -->
+        <div class="section" id="ai-score">
+          <div class="section-header">
+            <div class="section-number">05</div>
+            <h2>AI Score</h2>
+          </div>
+          <p style="color: var(--text-muted); margin-bottom: 16px">
+            The <code>aiScore</code> field is a 0–100 integer generated by the
+            model itself, reflecting confidence based on image quality, text
+            legibility, and field clarity — not a post-hoc calculation.
+          </p>
+          <div class="score-guide">
+            <div class="score-band">
+              <span class="dot" style="background: #22d3a0"></span> 80–100 —
+              High confidence, clean image
+            </div>
+            <div class="score-band">
+              <span class="dot" style="background: #f5a623"></span> 50–79 —
+              Moderate, some ambiguity
+            </div>
+            <div class="score-band">
+              <span class="dot" style="background: #ff5f6d"></span> 0–49 — Low
+              confidence, blurry or unclear
+            </div>
+          </div>
+          <div class="callout warn" style="margin-top: 16px">
+            <span class="callout-icon">⚠️</span>
+            <div class="callout-text">
+              <strong>Treat scores below 60 with caution</strong>
+              Consider prompting your user to re-upload a clearer photo before
+              proceeding with the extracted values.
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── Status Values ── -->
+        <div class="section" id="status-values">
+          <div class="section-header">
+            <div class="section-number">06</div>
+            <h2>Status Values</h2>
+          </div>
+          <div class="status-grid">
+            <div class="status-row">
+              <span class="status-code s200">complete</span>
+              <div class="status-info">
+                <strong>Both fields extracted</strong>
+                <p>
+                  Both <code>transactionId</code> and
+                  <code>toAccountNumber</code> were found with sufficient
+                  confidence.
+                </p>
+              </div>
+            </div>
+            <div class="status-row">
+              <span class="status-code s400">partial</span>
+              <div class="status-info">
+                <strong>One field extracted</strong>
+                <p>
+                  Only one of the two fields was found. Check
+                  <code>aiScore</code> — may indicate a low-quality image.
+                </p>
+              </div>
+            </div>
+            <div class="status-row">
+              <span class="status-code" style="color: var(--text-muted)"
+                >empty</span
+              >
+              <div class="status-info">
+                <strong>No fields extracted</strong>
+                <p>
+                  Neither field was found. Image may not be a valid bank slip or
+                  is unreadable.
+                </p>
+              </div>
+            </div>
+            <div class="status-row">
+              <span class="status-code s500">error</span>
+              <div class="status-info">
+                <strong>Processing failed</strong>
+                <p>
+                  Server or upstream AI error. Check <code>error</code> field
+                  for message. Returned with a 4xx or 5xx HTTP code.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── HTTP Codes ── -->
+        <div class="section" id="http-codes">
+          <div class="section-header">
+            <div class="section-number">07</div>
+            <h2>HTTP Status Codes</h2>
+          </div>
+          <div class="status-grid">
+            <div class="status-row">
+              <span class="status-code s200">200</span>
+              <div class="status-info">
+                <strong>OK</strong>
+                <p>
+                  Request processed. Always check the <code>status</code> field
+                  — a 200 can still carry <code>"partial"</code> or
+                  <code>"empty"</code> results.
+                </p>
+              </div>
+            </div>
+            <div class="status-row">
+              <span class="status-code s400">400</span>
+              <div class="status-info">
+                <strong>Bad Request</strong>
+                <p>
+                  <code>base64Image</code> is missing from the request body.
+                </p>
+              </div>
+            </div>
+            <div class="status-row">
+              <span class="status-code s500">500</span>
+              <div class="status-info">
+                <strong>Internal Server Error</strong>
+                <p>
+                  AI parsing failed or OpenAI returned an unparseable response.
+                  Retry with exponential backoff.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── Image Guidelines ── -->
+        <div class="section" id="image-guidelines">
+          <div class="section-header">
+            <div class="section-number">08</div>
+            <h2>Image Guidelines</h2>
+          </div>
+          <div class="callout info">
+            <span class="callout-icon">📸</span>
+            <div class="callout-text">
+              <strong>Supported formats</strong>
+              PNG, JPEG, WebP, GIF. Always include the full data URI prefix:
+              <code>data:image/png;base64,...</code>
+            </div>
+          </div>
+          <div class="field-group" style="margin-top: 16px">
+            <div class="field-group-title">
+              Recommendations for best results
+            </div>
+            <div class="field-row">
+              <div><span class="field-key">Resolution</span></div>
+              <div><span class="param-type">—</span></div>
+              <div class="field-info">
+                Minimum 800×600px. Higher resolution improves AI score on small
+                text.
+              </div>
+            </div>
+            <div class="field-row">
+              <div><span class="field-key">Lighting</span></div>
+              <div><span class="param-type">—</span></div>
+              <div class="field-info">
+                Even, diffuse lighting. Avoid glare on thermal paper slips.
+              </div>
+            </div>
+            <div class="field-row">
+              <div><span class="field-key">Crop</span></div>
+              <div><span class="param-type">—</span></div>
+              <div class="field-info">
+                Crop tightly to the slip. Excess background does not improve
+                accuracy.
+              </div>
+            </div>
+            <div class="field-row">
+              <div><span class="field-key">Max size</span></div>
+              <div><span class="param-type">—</span></div>
+              <div class="field-info">
+                20MB payload limit. Compress images above 5MB before sending.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- ── Errors ── -->
+        <div class="section" id="errors">
+          <div class="section-header">
+            <div class="section-number">09</div>
+            <h2>Error Handling</h2>
+          </div>
+          <p style="color: var(--text-muted); margin-bottom: 16px">
+            All errors include a <code>requestId</code> for server-side log
+            lookup and a <code>processTimeMs</code> to aid debugging.
+          </p>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-lang">Error shape (all codes)</span>
+            </div>
+            <pre>{
+  <span class="json-key">"requestId"</span>: <span class="json-str">"req_..."</span>,
+  <span class="json-key">"status"</span>: <span class="json-str">"error"</span>,
+  <span class="json-key">"error"</span>: <span class="json-str">"Human-readable message"</span>,
+  <span class="json-key">"processTimeMs"</span>: <span class="json-num">12</span>
+}</pre>
+          </div>
+          <div class="callout warn" style="margin-top: 8px">
+            <span class="callout-icon">🔁</span>
+            <div class="callout-text">
+              <strong>500 errors are safe to retry</strong>
+              Use exponential backoff starting at 1s. Transient OpenAI errors
+              typically resolve within 1–2 retries. Log
+              <code>requestId</code> from each attempt for tracing.
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /content -->
+    </main>
+
+    <script>
+      function switchTab(el, tabId) {
+        const panels = el.closest(".tab-panels");
+        panels
+          .querySelectorAll(".resp-tab")
+          .forEach((t) => t.classList.remove("active"));
+        panels
+          .querySelectorAll(".tab-content")
+          .forEach((t) => t.classList.remove("active"));
+        el.classList.add("active");
+        panels.querySelector("#" + tabId).classList.add("active");
+      }
+
+      function copyCode(btn) {
+        const pre = btn.closest(".code-block").querySelector("pre");
+        navigator.clipboard.writeText(pre.innerText).then(() => {
+          btn.textContent = "Copied!";
+          setTimeout(() => (btn.textContent = "Copy"), 2000);
+        });
+      }
+
+      // Highlight active nav on scroll
+      const sections = document.querySelectorAll("[id]");
+      const navItems = document.querySelectorAll(".nav-item");
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              navItems.forEach((n) => n.classList.remove("active"));
+              const active = document.querySelector(
+                `.nav-item[href="#${entry.target.id}"]`,
+              );
+              if (active) active.classList.add("active");
+            }
+          });
+        },
+        { rootMargin: "-20% 0px -70% 0px" },
+      );
+
+      sections.forEach((s) => observer.observe(s));
+    </script>
+  </body>
+</html>
